@@ -1,0 +1,60 @@
+<div style="padding:16px;text-align:center">
+                        <p style="display: none;" id="connect">Connecté à <span id="device"></span></p>
+                        <button  style="display: none;" id="cast">Partager l'écran</button>
+                        <p style="display: none;" id="disconnect">Aucun appareil Chromecast connecté</p>
+                        <p id="initialise">Initialisation de Chromecast en cours...</p>
+                </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/castjs/5.3.0/cast.min.js"></script>
+<script>
+// Create new Castjs instance
+const cjs = new Castjs();
+
+  document.getElementById('cast').addEventListener('click', async function() {
+    // Check if casting is available
+    console.log('click', cjs);
+
+    if (cjs.available) {
+        try {
+            // Get the media stream for screen sharing
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: true,
+                audio: true // Si vous voulez partager l'audio aussi
+            });
+
+            // Create a MediaSource for the stream
+            const mediaSource = new MediaSource();
+            const videoElement = document.createElement('video');
+            videoElement.srcObject = stream; // Connect the stream to the video element
+            videoElement.play(); // Play the stream
+
+            // You can now cast the stream to the Chromecast
+            cjs.cast(videoElement.srcObject);
+
+        } catch (error) {
+            console.error('Erreur lors du partage de l\'écran ou de la diffusion :', error);
+        }
+    } else {
+        console.log('Le casting n\'est pas disponible.');
+    }
+});
+
+cjs.on('available', ()  => {
+    document.getElementById('initialise').style.display = 'none'
+}); 
+
+cjs.on('disconnect',()  => {
+    document.getElementById('disconnect').style.display = 'block'
+     document.getElementById('connect').style.display = 'none'
+      document.getElementById('cast').style.display = 'none'
+}); 
+
+cjs.on('connect',()  => {
+    document.getElementById('disconnect').style.display = 'none'
+    document.getElementById('connect').style.display = 'block'
+    document.getElementById('cast').style.display = 'block'
+    document.getElementById('device').innerHTML = cjs.device
+}); 
+cjs.on('end',()  => {
+
+});
+</script>
